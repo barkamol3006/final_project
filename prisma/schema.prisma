@@ -10,13 +10,50 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Define the Category model
+model category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  // Define the relationship with products
+  products product[] @relation("CategoryToProducts")
+}
+
 model product {
-  id          Int    @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   name        String
   description String
   price       Int
   image       String
-  sold        Int    @default(0)
+  sold        Int      @default(0)
+  categoryId  Int?
+  updatedAt   DateTime @default(now()) @updatedAt
+  order       order[]
+
+  // Define the relationship with the category
+  category category? @relation("CategoryToProducts", fields: [categoryId], references: [id])
 
   @@index([name])
+}
+
+// user model
+model user {
+  id       Int     @id @default(autoincrement())
+  email    String  @unique
+  password String?
+  orders   order[]
+}
+
+// order model
+model order {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  createdAt DateTime @default(now())
+
+  // Define the relationship with the user
+  user user @relation(fields: [userId], references: [id])
+
+  // Define the relationship with the product
+  product product @relation(fields: [productId], references: [id])
+  amount  Int
 }
