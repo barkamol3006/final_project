@@ -1,18 +1,24 @@
 'use client';
 import { UploadButton } from '@/utils/uploadthing';
+import type { category } from '@prisma/client';
 import { FormEvent, useRef, useState } from 'react';
 
 export default function ProductForm({
-  classes = 'indicator-item absolute badge right-10 badge-success btn btn-circle',
+  classes='indicator-item absolute badge right-10 badge-success btn btn-circle',
+  categories,
 }: {
   classes?: string;
+  categories: category[];
 }) {
+  
   const [imageUrl, setImageUrl] = useState('');
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const data = Object.fromEntries(new FormData(form).entries());
     data['image'] = imageUrl;
+    data['categoryId'] = data['categoryId'] || ''
+    
 
     // console.log(data);
     const res = await fetch('/api/product/', {
@@ -29,7 +35,6 @@ export default function ProductForm({
     }
   };
   const modalRef = useRef<HTMLDialogElement>(null);
-
   return (
     <>
       <button className={classes} onClick={() => modalRef.current?.showModal()}>
@@ -63,6 +68,21 @@ export default function ProductForm({
                 className='w-full rounded-md border p-2'
                 placeholder='Enter price'
               />
+            </div>
+            <div className='mb-4'>
+              <label className='mb-2 block text-sm font-bold text-gray-700' htmlFor='price'>
+                Category
+              </label>
+              <select
+                id='category'
+                name='categoryId'
+                className='w-full rounded-md border p-2'
+                placeholder='choose category'
+              >
+                {
+                categories.map(({id, name}) => <option key={id} value={id}>{name}</option>)
+                }
+              </select>
             </div>
             <div className='mb-4'>
               <label className='mb-2 block text-sm font-bold text-gray-700' htmlFor='description'>

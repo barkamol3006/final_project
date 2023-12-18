@@ -1,21 +1,34 @@
 export const dynamic = 'force-dynamic';
 
 import { prisma } from '@/lib/prisma';
-import ProductForm from './components/ProductForm';
-import Image from 'next/image';
+
 import ProductList from './components/productList';
-import { product } from '@prisma/client';
+import { getServerSession } from 'next-auth';
+import { options } from './api/auth/[...nextauth]/options';
+import { redirect } from 'next/navigation';
 
 async function getData() {
   const products = await prisma.product.findMany();
-  return products;
+  const categories = await prisma.category.findMany();
+  return { products, categories};
 }
 
+export const getSession = async () =>  await getServerSession(options)
+
+
 export default async function Home() {
-  const products = await getData();
+const session = await getSession()
+
+  if (!session) {
+    return redirect('/user/auth')
+  }
+  const { products, categories } = await getData();
+
   return (
     <>
-      <ProductList products={products} />
+      <div className='mt-4'>
+        <ProductList {...{ products, categories }} />
+      </div>
     </>
   );
 }
